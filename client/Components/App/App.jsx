@@ -9,25 +9,26 @@ class App extends Component {
     super(props);
 
     this.state = {
+      draggingInProgressFromCard: "",
       cardData: {
         Winnie: {
           name: "Winnie",
-          tasks: ["Task #1", "Task #2"],
+          tasks: ["Winnie Task #1", "Winnie Task #2"],
           headerBgColor: "#8E6E95",
         },
         Bob: {
           name: "Bob",
-          tasks: ["Task #1", "Task #2"],
+          tasks: ["Bob Task #1", "Bob Task #2"],
           headerBgColor: "#39A59C",
         },
         Thomas: {
           name: "Thomas",
-          tasks: ["Task #1", "Task #2"],
+          tasks: ["Thomas Task #1", "Thomas Task #2"],
           headerBgColor: "#344859",
         },
         George: {
           name: "George",
-          tasks: ["Task #1", "Task #2"],
+          tasks: ["George Task #1", "George Task #2"],
           headerBgColor: "#E8741E",
         },
       },
@@ -35,6 +36,9 @@ class App extends Component {
 
     this.handleNewTask = this.handleNewTask.bind(this);
     this.handleTaskShift = this.handleTaskShift.bind(this);
+    this.handleTaskDragStart = this.handleTaskDragStart.bind(this);
+    this.handleTaskDrop = this.handleTaskDrop.bind(this);
+    this.handleTaskDragEnd = this.handleTaskDragEnd.bind(this);
   }
 
   componentDidMount() {
@@ -84,11 +88,43 @@ class App extends Component {
     this.setState({ cardData: { ...cardData } });
   }
 
-  render() {
+  handleTaskDragStart(event, taskIndex, cardName) {
     const {
       state: { cardData },
+    } = this;
+    event.dataTransfer.setData("task", `${cardName},${taskIndex}`);
+    this.setState({ draggingInProgressFromCard: cardName });
+  }
+
+  handleTaskDrop(e, targetCardName) {
+    const {
+      state: { cardData },
+    } = this;
+
+    const [cardName, taskIndex] = e.dataTransfer.getData("task").split(",");
+
+    const [taskToMove] = cardData[cardName].tasks.splice(taskIndex, 1);
+
+    cardData[targetCardName].tasks.push(taskToMove);
+
+    this.setState({
+      cardData: { ...cardData },
+      draggingInProgressFromCard: "",
+    });
+  }
+
+  handleTaskDragEnd(e) {
+    this.setState({ draggingInProgressFromCard: "" });
+  }
+
+  render() {
+    const {
+      state: { cardData, draggingInProgressFromCard },
       handleNewTask,
       handleTaskShift,
+      handleTaskDragStart,
+      handleTaskDrop,
+      handleTaskDragEnd,
     } = this;
 
     const cardNames = Object.keys(cardData);
@@ -99,6 +135,11 @@ class App extends Component {
           display: flex;
           flex-flow: row nowrap;
           width: 100%;
+          text-align: center;
+          align-items: baseline;
+          padding-top: 20px;
+          font-size: 1rem;
+          font-family: arial;
         `}
       >
         {cardNames.map((name, i) => (
@@ -109,6 +150,12 @@ class App extends Component {
             rightNeighbor={i + 1 >= cardNames.length ? "" : cardNames[i + 1]}
             key={name}
             handleTaskShift={handleTaskShift}
+            handleTaskDragStart={handleTaskDragStart}
+            displayDroppableTask={
+              draggingInProgressFromCard && draggingInProgressFromCard !== name
+            }
+            handleTaskDrop={handleTaskDrop}
+            handleTaskDragEnd={handleTaskDragEnd}
           />
         ))}
       </div>

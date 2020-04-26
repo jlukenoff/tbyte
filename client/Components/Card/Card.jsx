@@ -10,6 +10,10 @@ const Card = ({
   rightNeighbor = "",
   handleNewTask,
   handleTaskShift,
+  handleTaskDragStart,
+  displayDroppableTask,
+  handleTaskDrop,
+  handleTaskDragEnd,
 }) => {
   return (
     <div
@@ -30,6 +34,7 @@ const Card = ({
         css={css`
           background-color: ${headerBgColor};
           color: #fff;
+          padding: 5px;
         `}
       >
         <h6>{name}</h6>
@@ -41,26 +46,45 @@ const Card = ({
               list-style: none;
             `}
             key={task}
+            draggable
+            onDragStart={(e) => handleTaskDragStart(e, i, name)}
+            onDragEnd={(e) => handleTaskDragEnd(e)}
           >
-            {leftNeighbor && (
+            {/* leftNeighbor && (
               <button
                 type="button"
                 onClick={() => handleTaskShift(i, name, leftNeighbor)}
               >
                 {"<"}
               </button>
-            )}
+            ) */}
             {task}
-            {rightNeighbor && (
+            {/* rightNeighbor && (
               <button
                 type="button"
                 onClick={() => handleTaskShift(i, name, rightNeighbor)}
               >
                 {">"}
               </button>
-            )}
+            ) */}
           </li>
         ))}
+        {displayDroppableTask && (
+          <li
+            css={css`
+              display: block;
+              width: 100%;
+              height: 50px;
+              background-color: #ccc;
+            `}
+            onDragOver={(e) => {
+              e.preventDefault();
+            }}
+            onDrop={(e) => handleTaskDrop(e, name)}
+          >
+            Drop here
+          </li>
+        )}
       </ul>
       <button
         type="button"
